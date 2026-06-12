@@ -1,6 +1,4 @@
-import json
-import csv
-import datetime as dt
+import pandas as pd
 import matplotlib.pyplot as plt
 
 # https://data.nasa.gov/resource/eva.json (with modifications)
@@ -8,52 +6,22 @@ input_file = open('./eva-data.json', 'r', encoding="ascii")
 output_file = open('./eva-data.csv','w', encoding="utf-8")
 graph_file = './cumulative_eva_graph.png'
 
-fieldnames = ("EVA #", "Country", "Crew    ", "Vehicle", "Date", "Duration", "Purpose")
+# Load the data with pandas, converting the date column to datetime objects
+eva_df = pd.read_json(input_file, convert_dates=['date'], encoding='ascii')
+eva_df['eva'] = eva_df['eva'].astype(float)
+eva_df.dropna(axis=0, subset=['duration', 'date'], inplace=True)
 
-data=[]
+eva_df.to_csv(output_file, index=False, encoding='utf-8') 
 
-for i in range(375):
-    line=input_file.readline()
-    print(line)
-    data.append(json.loads(line[1:-1]))
-#data.pop(0)
-## Comment out this bit if you don't want the spreadsheet
+# Sort dates
+eva_df.sort_values(by='date', inplace=True)
 
-processed_data=csv.writer(output_file)
+# Create a cumulative time of EVA 
+eva_df['duration_hours'] = eva_df['duration'].str.split(':').apply(lambda x: int(x[0]) + int(x[1])/60)
+eva_df['cumulative_time'] = eva_df['duration_hours'].cumsum()
 
-time = []
-date =[]
-
-line=0
-for i in data:
-    print(data[line])
-    # and this bit
-    processed_data.writerow(data[line].values())
-    if 'duration' in data[line].keys():
-        duration_str=data[line]['duration']
-        if duration_str == '':
-            pass
-        else:
-            duration_dt=dt.datetime.strptime(duration_str,'%H:%M')
-            duration_hours = dt.timedelta(hours=duration_dt.hour, minutes=duration_dt.minute, seconds=duration_dt.second).total_seconds()/(60*60)
-            print(duration_dt,duration_hours)
-            time.append(duration_hours)
-            if 'date' in data[line].keys():
-                date.append(dt.datetime.strptime(data[line]['date'][0:10], '%Y-%m-%d'))
-                #date.append(data[line]['date'][0:10])
-
-            else:
-                time.pop(0)
-    line+=1
-
-t=[0]
-for i in time:
-    t.append(t[-1]+i)
-
-date,time = zip(*sorted(zip(date, time)))
-
-
-plt.plot(date,t[1:], 'ko-')
+# Plot the cumulative time spent in space over the years
+plt.plot(eva_df['date'], eva_df['cumulative_time'], 'ko-')
 plt.xlabel('Year')
 plt.ylabel('Total time spent in space to date (hours)')
 plt.tight_layout()
