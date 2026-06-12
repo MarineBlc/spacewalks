@@ -1,6 +1,11 @@
+"""
+The script reads the data from a JSON file, processes it, and outputs a CSV file and a graph of cumulative EVA time over the years.
+"""
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Define input and output file paths
 # https://data.nasa.gov/resource/eva.json (with modifications)
 input_file = open('./eva-data.json', 'r', encoding="ascii")
 output_file = open('./eva-data.csv','w', encoding="utf-8")
@@ -11,6 +16,7 @@ eva_df = pd.read_json(input_file, convert_dates=['date'], encoding='ascii')
 eva_df['eva'] = eva_df['eva'].astype(float)
 eva_df.dropna(axis=0, subset=['duration', 'date'], inplace=True)
 
+# Save the processed data to a CSV file
 eva_df.to_csv(output_file, index=False, encoding='utf-8') 
 
 # Sort dates
