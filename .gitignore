@@ -1,2 +1,10 @@
 .DS_Store
+.coverage
+.vscode/
+
+# Python related
 venv_spacewalks/
+__pycache__/
+
+# Documentation output
+site/

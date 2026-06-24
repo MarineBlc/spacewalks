@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import sys
-import re # added this line
+import re # built-in python package, so no need to tell users to install those
 
 
 def main(input_file, output_file, graph_file):
